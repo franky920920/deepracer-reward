@@ -1,60 +1,45 @@
+import math
+
+
 def reward_function(params):
-    '''
-    In @params object:
+    """
+    In @:params object:
 
     {
         "all_wheels_on_track": Boolean,    # flag to indicate if the vehicle is on the track
         "x": float,                        # vehicle's x-coordinate in meters
         "y": float,                        # vehicle's y-coordinate in meters
-        "distance_from_center": float,     # distance in meters from the track center 
-        "is_left_of_center": Boolean,      # Flag to indicate if the vehicle is on the left side to the track center or not. 
+        "distance_from_center": float,     # distance in meters from the track center
+        "is_left_of_center": Boolean,      # Flag to indicate if the vehicle is on the left side to the track center or not.
         "heading": float,                  # vehicle's yaw in degrees
         "progress": float,                 # percentage of track completed
         "steps": int,                      # number steps completed
         "speed": float,                    # vehicle's speed in meters per second (m/s)
-        "streering_angle": float,          # vehicle's steering angle in degrees
+        "steering_angle": float,          # vehicle's steering angle in degrees
         "track_width": float,              # width of the track
         "waypoints": [[float, float], … ], # list of [x,y] as milestones along the track center
         "closest_waypoints": [int, int]    # indices of the two nearest waypoints.
     }
-    '''
-    ###############
-    ### Imports ###
-    ###############
+    """
 
-    import math
-
-    #################
-    ### Constants ###
-    #################
-
+    # CONST
     MAX_REWARD = 1e2
     MIN_REWARD = 1e-3
     DIRECTION_THRESHOLD = 10.0
     ABS_STEERING_THRESHOLD = 30
 
-    ########################
-    ### Input parameters ###
-    ########################
+    # input params
     on_track = params['all_wheels_on_track']
     distance_from_center = params['distance_from_center']
     track_width = params['track_width']
-    steering = abs(params['steering_angle']) # Only need the absolute steering angle for calculations
+    steering = abs(params['steering_angle'])  # Only need the absolute steering angle for calculations
     speed = params['speed']
     waypoints = params['waypoints']
-    closest_waypoints = params['closest_waypoints'] 
+    closest_waypoints = params['closest_waypoints']
     heading = params['heading']
 
     # negative exponential penalty
     reward = math.exp(-6 * distance_from_center)
-
-    ########################
-    ### Helper functions ###
-    ########################
-
-    ########################
-    ### Reward functions ###
-    ########################
 
     def on_track_reward(current_reward, on_track):
         if not on_track:
@@ -88,20 +73,16 @@ def reward_function(params):
         return current_reward
 
     def direction_reward(current_reward, waypoints, closest_waypoints, heading):
-
-        '''
-        Calculate the direction of the center line based on the closest waypoints    
-        '''
-
+        # Calculate the direction of the center line based on the closest waypoints
         next_point = waypoints[closest_waypoints[1]]
         prev_point = waypoints[closest_waypoints[0]]
 
         # Calculate the direction in radius, arctan2(dy, dx), the result is (-pi, pi) in radians
-        direction = math.atan2(next_point[1] - prev_point[1], next_point[0] - prev_point[0]) 
+        direction = math.atan2(next_point[1] - prev_point[1], next_point[0] - prev_point[0])
         # Convert to degrees
         direction = math.degrees(direction)
 
-        # Cacluate difference between track direction and car heading angle
+        # Calculate difference between track direction and car heading angle
         direction_diff = abs(direction - heading)
 
         # Penalize if the difference is too large
@@ -122,10 +103,7 @@ def reward_function(params):
             current_reward *= 0.8
         return current_reward
 
-    ########################
-    ### Execute Rewards  ###
-    ########################
-
+    # Execute Rewards
     reward = on_track_reward(reward, on_track)
     reward = distance_from_center_reward(reward, track_width, distance_from_center)
     reward = straight_line_reward(reward, steering, speed)
