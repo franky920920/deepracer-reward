@@ -56,11 +56,11 @@ def reward_function(params):
 
         # Give higher reward if the car is closer to center line and vice versa
         if distance_from_center <= marker_1:
-            current_reward *= 1.2
+            current_reward *= 1.3
         elif distance_from_center <= marker_2:
-            current_reward *= 0.8
+            current_reward *= 0.7
         elif distance_from_center <= marker_3:
-            current_reward += 0.5
+            current_reward += 0.4
         else:
             current_reward = MIN_REWARD  # likely crashed/ close to off track
 
@@ -69,7 +69,7 @@ def reward_function(params):
     def straight_line_reward(current_reward, steering, speed):
         # Positive reward if the car is in a straight line going fast
         if abs(steering) < 0.1 and speed > 3:
-            current_reward *= 1.2
+            current_reward *= 1.3
         return current_reward
 
     def direction_reward(current_reward, waypoints, closest_waypoints, heading):
